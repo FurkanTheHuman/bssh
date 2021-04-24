@@ -5,13 +5,14 @@ import (
 	"log"
 	"os"
 
-	"example.com/bssh/config"
+	bucket "example.com/bssh/bucket"
+
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"
 )
 
-func Connect(s config.SshSource) error {
+func Connect(s bucket.SshSource) error {
 	var config *ssh.ClientConfig
 
 	if s.Password != "" {

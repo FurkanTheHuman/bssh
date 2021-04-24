@@ -1,15 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"example.com/bssh/config"
+	"example.com/bssh/bucket"
+	"example.com/bssh/fzf"
 	ssh "example.com/bssh/ssh_common"
-	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
 	"github.com/urfave/cli/v2"
 )
 
@@ -43,73 +42,22 @@ func main() {
 		},
 
 		Action: func(c *cli.Context) error {
-
-			sshs, err := config.GetSshList()
-			var namespace string
-
-			if c.Bool("namespace") {
-
-				namespaces := config.GetNamespaces(sshs)
-				selected, _ := fuzzyfinder.Find(namespaces, func(i int) string {
-					return namespaces[i]
-				}, fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-					if i == -1 {
-						return ""
-					}
-
-					var meta string
-					filtered_list, _ := config.FilterSsh(sshs, namespaces[i])
-					for filtered, _ := range filtered_list {
-						meta = meta + sshs[filtered].Username + "@" + sshs[filtered].Addr + "\n"
-
-					}
-					return fmt.Sprintf(meta)
-				}))
-				namespace = namespaces[selected]
+			if c.Args().Len() > 0 {
+				cli.ShowAppHelp(c)
+				fmt.Println("\n" + c.Args().Get(0) + " is not a command")
+				os.Exit(1)
 			}
-			if namespace != "" {
-				sshs, _ = config.FilterSsh(sshs, namespace) // Dont ignore this err
+			selectedSsh, err := fzf.FuzzySshSelector(c.Bool("namespace"))
 
-			}
-			if err != nil {
-				fmt.Println("failed to run fzf!")
-
-				if DEBUG == "true" {
-					log.Println(err)
-				}
-				return err
-			}
-			idx, err := fuzzyfinder.Find(sshs, func(i int) string {
-				return sshs[i].Username + "@" + sshs[i].Addr
-			},
-				fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-					if i == -1 {
-						return ""
-					}
-
-					checker := func(s config.SshSource) string {
-						if s.Password == "" {
-							return "<USES PRIVATE KEY>"
-						}
-						return s.Password
-					}
-
-					return fmt.Sprintf("ssh: %s (%s) \nPassword: %s \nNamespace: %s",
-						sshs[i].Username,
-						sshs[i].Addr,
-						checker(sshs[i]),
-						sshs[i].Namespace)
-				}))
 			if err != nil {
 				os.Exit(1)
 			}
-			ssh.Connect(sshs[idx])
 
-			return nil
+			return ssh.Connect(selectedSsh)
 		},
 		Commands: []*cli.Command{
 			{
-				Name:    "add", //add in future,
+				Name:    "add", //port flag needed,
 				Aliases: []string{"a", "ssh"},
 				Usage:   "add a task to the list",
 				Flags: []cli.Flag{
@@ -138,7 +86,7 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 
-					user, addr := config.SplitFullname(c.String("addr"))
+					user, addr := bucket.SplitFullname(c.String("addr"))
 					port := "22"
 					password := c.String("password")
 					var key []byte
@@ -150,31 +98,53 @@ func main() {
 						}
 
 					}
-					s := config.SshSource{Username: user, Addr: addr, Password: password, Port: port, Key: key, Namespace: c.String("namespace")}
-					b, err := json.MarshalIndent(s, "", "\t")
-					if err != nil {
-						log.Fatalln("Can not parse SshSource")
-					}
-					config.UpdateConfigFile(string(b))
+					s := bucket.SshSource{Username: user, Addr: addr, Password: password, Port: port, Key: key, Namespace: c.String("namespace")}
+
+					bucket.UpdateConfigFile(s)
 					return nil
 				},
 			},
 			{
-				Name:    "list", //add in future,
+				Name:    "list", //Maybe categorize the output and make it look nice,
 				Aliases: []string{"ls"},
 				Flags:   namespaceFlag,
 				Usage:   "list available ssh connections",
 				Action: func(c *cli.Context) error {
-					x := c.String("namespace")
-					fmt.Println(x)
-					contents, err := config.GetSshList()
+					namespace := c.String("namespace")
+					contents, err := bucket.GetSshList()
 					if err != nil {
 						log.Fatalln("FAILED", err)
 					}
+					if namespace != "" {
+						contents = bucket.FilterSsh(contents, namespace)
+					}
+					if len(contents) <= 1 {
+						fmt.Println("This namespace is empty")
+					}
 					for i, s := range contents {
-						fmt.Printf("[%d] %s@%s\n", i, s.Username, s.Addr)
+						fmt.Printf("[%d] - Namespace: %s,\t Address: %s@%s\n", i, s.Namespace, s.Username, s.Addr)
 					}
 					return nil
+				},
+			},
+			{
+				Name:    "remove", //add in future,
+				Aliases: []string{"r", "rm"},
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "namespace",
+						Aliases: []string{"n"},
+						Usage:   "filter by namespace",
+					},
+				},
+				Usage: "remove selected connection from bucket",
+				Action: func(c *cli.Context) error {
+					s, err := fzf.FuzzySshSelector(c.Bool("namespace"))
+					if err != nil {
+						os.Exit(0)
+					}
+					_, err = bucket.RemoveSsh(s)
+					return err
 				},
 			},
 		},

@@ -1,4 +1,4 @@
-package config
+package bucket
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -80,6 +81,31 @@ func GetFileContents() (string, error) {
 	return string(file), nil
 }
 
+func RemoveSsh(id SshSource) ([]SshSource, error) {
+	list, err := GetSshList()
+	if err != nil {
+		os.Exit(0)
+	}
+
+	var filtered []SshSource
+	for i := range list {
+		if reflect.DeepEqual(list[i], id) {
+			continue
+		}
+		filtered = append(filtered, list[i])
+	}
+
+	b, err := json.MarshalIndent(filtered, "", "\t")
+	f, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE, 0644)
+	if _, err = f.WriteString(string(b)); err != nil {
+		log.Println("Write to file failed")
+
+		panic(err)
+	}
+
+	return list, err
+}
+
 func GetSshList() ([]SshSource, error) {
 	contents, err := GetFileContents()
 	if err != nil {
@@ -94,7 +120,7 @@ func GetSshList() ([]SshSource, error) {
 	return list, nil
 }
 
-func FilterSsh(list []SshSource, namespace string) ([]SshSource, error) {
+func FilterSsh(list []SshSource, namespace string) []SshSource {
 
 	var filtered []SshSource
 	for i := range list {
@@ -102,7 +128,7 @@ func FilterSsh(list []SshSource, namespace string) ([]SshSource, error) {
 			filtered = append(filtered, list[i])
 		}
 	}
-	return filtered, nil
+	return filtered
 
 }
 
@@ -122,7 +148,12 @@ func GetNamespaces(s []SshSource) []string {
 
 }
 
-func UpdateConfigFile(newContent string) error {
+func UpdateConfigFile(s SshSource) error {
+	b, err := json.MarshalIndent(s, "", "\t")
+	if err != nil {
+		log.Fatalln("Can not parse SshSource")
+	}
+	newContent := string(b)
 	path := configPath
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -147,7 +178,7 @@ func UpdateConfigFile(newContent string) error {
 	}
 	list = append(list, new)
 	log.Println("There are ", len(list), "records in config")
-	b, err := json.MarshalIndent(list, "", "  ")
+	b, err = json.MarshalIndent(list, "", "  ")
 	if err != nil {
 		log.Println("Could not create json from list")
 

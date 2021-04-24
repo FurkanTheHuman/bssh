@@ -52,7 +52,7 @@ bssh add -n <namespace> furkan@192.168.1.1 --key /path/to/the/ssh/key # or -k
 adds this ssh connection to the bucket 
 if -n is not specified it is added to default
 
-bssh -r <namepsace>
+bssh -r -n <namepsace>
 remove connection
 if namespace is not specified bssh searches for all namespaces
 
