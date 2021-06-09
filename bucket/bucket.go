@@ -19,6 +19,7 @@ type SshSource struct {
 	Password  string `json:"password"`
 	Port      string `json:"port"`
 	Namespace string `json:"namespace"`
+	Alias     string `json:"alias"`
 	// maybe add date here
 }
 
@@ -96,7 +97,11 @@ func RemoveSsh(id SshSource) ([]SshSource, error) {
 	}
 
 	b, err := json.MarshalIndent(filtered, "", "\t")
-	f, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatalln("config file is corrupted!")
+	}
+	// there should be eero checking
+	f, _ := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if _, err = f.WriteString(string(b)); err != nil {
 		log.Println("Write to file failed")
 

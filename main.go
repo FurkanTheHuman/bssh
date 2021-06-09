@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	b64 "encoding/base64"
+
 	"example.com/bssh/bucket"
 	"example.com/bssh/fzf"
 	ssh "example.com/bssh/ssh_common"
@@ -32,12 +34,12 @@ func main() {
 			&cli.BoolFlag{
 				Name:    "namespace",
 				Aliases: []string{"n"},
-				Usage:   "specify namespace",
+				Usage:   "filter by namespace",
 			},
 			&cli.BoolFlag{
 				Name:    "show-password",
 				Aliases: []string{"s"},
-				Usage:   "specify password",
+				Usage:   "show password",
 			},
 		},
 
@@ -83,12 +85,19 @@ func main() {
 						Usage:    "specify ssh ssh address to connect (username@ip_or_dns)",
 						Required: true,
 					},
+					&cli.StringFlag{
+						Name:     "alias",
+						Usage:    "create an alias for better search",
+						Required: false,
+					},
 				},
 				Action: func(c *cli.Context) error {
 
 					user, addr := bucket.SplitFullname(c.String("addr"))
 					port := "22"
 					password := c.String("password")
+					password = b64.StdEncoding.EncodeToString([]byte(password))
+					alias := c.String("alias")
 					var key []byte
 					if c.String("key") != "" {
 						pemBytes, err := ioutil.ReadFile(c.String("key"))
@@ -98,7 +107,7 @@ func main() {
 						}
 
 					}
-					s := bucket.SshSource{Username: user, Addr: addr, Password: password, Port: port, Key: key, Namespace: c.String("namespace")}
+					s := bucket.SshSource{Username: user, Addr: addr, Password: password, Port: port, Key: key, Namespace: c.String("namespace"), Alias: alias}
 
 					bucket.UpdateConfigFile(s)
 					return nil

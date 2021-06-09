@@ -1,6 +1,7 @@
 package fzf
 
 import (
+	b64 "encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -24,7 +25,7 @@ func FuzzySshSelector(isNamespaced bool) (config.SshSource, error) {
 	}
 
 	idx, err := fuzzyfinder.Find(sshs, func(i int) string {
-		return sshs[i].Username + "@" + sshs[i].Addr
+		return sshs[i].Username + "@" + sshs[i].Addr + " \t " + sshs[i].Alias
 	},
 		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
 			if i == -1 {
@@ -35,14 +36,16 @@ func FuzzySshSelector(isNamespaced bool) (config.SshSource, error) {
 				if s.Password == "" {
 					return "<USES PRIVATE KEY>"
 				}
-				return s.Password
-			}
+				decodedPassword, _ := b64.StdEncoding.DecodeString(s.Password)
 
-			return fmt.Sprintf("ssh: %s (%s) \nPassword: %s \nNamespace: %s",
+				return string(decodedPassword)
+			}
+			return fmt.Sprintf("ssh: %s (%s) \nPassword: %s \nNamespace: %s \nAlias: %s",
 				sshs[i].Username,
 				sshs[i].Addr,
 				checker(sshs[i]),
-				sshs[i].Namespace)
+				sshs[i].Namespace,
+				sshs[i].Alias)
 		}))
 	return sshs[idx], err
 }

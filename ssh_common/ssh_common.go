@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	bucket "example.com/bssh/bucket"
+	b64 "encoding/base64"
 
+	bucket "example.com/bssh/bucket"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"
@@ -16,11 +17,14 @@ func Connect(s bucket.SshSource) error {
 	var config *ssh.ClientConfig
 
 	if s.Password != "" {
-
+		decodedPassword, err := b64.StdEncoding.DecodeString(s.Password)
+		if err != nil {
+			fmt.Println("ERROR: password is corrupted for this host. Can not decode.")
+		}
 		config = &ssh.ClientConfig{
 			User: s.Username,
 			Auth: []ssh.AuthMethod{
-				ssh.Password(s.Password),
+				ssh.Password(string(decodedPassword)),
 			},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
@@ -97,18 +101,18 @@ func RequestTerminal(session *ssh.Session) (int, *term.State) {
 	if terminal.IsTerminal(fileDescriptor) {
 		originalState, err := terminal.MakeRaw(fileDescriptor)
 		if err != nil {
-			log.Fatal("LINE: X -> Can't  save original terminal state ")
+			log.Fatal("Can't  save original terminal state ")
 		}
 
 		termWidth, termHeight, err := terminal.GetSize(fileDescriptor)
 		if err != nil {
-			log.Fatal("LINE: X -> Can't  save original terminal state ")
+			log.Fatal("Can't  save original terminal state ")
 
 		}
 
 		err = session.RequestPty("xterm-256color", termHeight, termWidth, modes)
 		if err != nil {
-			log.Fatal("LINE: X -> Can't  save original terminal state ")
+			log.Fatal("Can't  save original terminal state ")
 
 		}
 		return fileDescriptor, originalState
