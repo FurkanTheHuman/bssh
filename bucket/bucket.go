@@ -69,7 +69,7 @@ func GetFileContents() (string, error) {
 	if err != nil {
 		log.Println("Config file does not exist. Creating one...")
 		_, err := os.Create(path)
-		f, _ := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+		f, _ := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0600)
 		f.WriteString("[]")
 		if err != nil {
 			log.Println("Can not create one. Exiting")
@@ -82,15 +82,19 @@ func GetFileContents() (string, error) {
 	return string(file), nil
 }
 
-func RemoveSsh(id SshSource) ([]SshSource, error) {
+func RemoveSsh(id SshSource) (SshSource, error) {
 	list, err := GetSshList()
 	if err != nil {
 		os.Exit(0)
 	}
 
 	var filtered []SshSource
+	var extracted SshSource
+	seen := true // to save the duplicates
 	for i := range list {
-		if reflect.DeepEqual(list[i], id) {
+		if reflect.DeepEqual(list[i], id) && seen {
+			extracted = list[i]
+			seen = false
 			continue
 		}
 		filtered = append(filtered, list[i])
@@ -108,7 +112,7 @@ func RemoveSsh(id SshSource) ([]SshSource, error) {
 		panic(err)
 	}
 
-	return list, err
+	return extracted, err
 }
 
 func GetSshList() ([]SshSource, error) {

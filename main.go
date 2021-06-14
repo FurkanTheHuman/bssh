@@ -5,12 +5,15 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
+	"sync"
 
 	b64 "encoding/base64"
 
 	"example.com/bssh/bucket"
 	"example.com/bssh/fzf"
 	ssh "example.com/bssh/ssh_common"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
 )
 
@@ -119,6 +122,9 @@ func main() {
 				Flags:   namespaceFlag,
 				Usage:   "list available ssh connections",
 				Action: func(c *cli.Context) error {
+					tw := table.NewWriter()
+					tw.AppendHeader(table.Row{"#", "Ssh Address", "Namespace", "Uses", "Alias"})
+
 					namespace := c.String("namespace")
 					contents, err := bucket.GetSshList()
 					if err != nil {
@@ -131,8 +137,18 @@ func main() {
 						fmt.Println("This namespace is empty")
 					}
 					for i, s := range contents {
-						fmt.Printf("[%d] - Namespace: %s,\t Address: %s@%s\n", i, s.Namespace, s.Username, s.Addr)
+						if s.Password != "" {
+
+							tw.AppendRow(table.Row{i + 1, s.Username + "@" + s.Addr, s.Namespace, "password", s.Alias})
+						} else {
+							tw.AppendRow(table.Row{i + 1, s.Username + "@" + s.Addr, s.Namespace, "ssh key", s.Alias})
+
+						}
 					}
+
+					tw.AppendFooter(table.Row{"", "Total:", len(contents)})
+					fmt.Println(tw.Render())
+
 					return nil
 				},
 			},
@@ -152,7 +168,91 @@ func main() {
 					if err != nil {
 						os.Exit(0)
 					}
-					_, err = bucket.RemoveSsh(s)
+					extracted, err := bucket.RemoveSsh(s)
+					if extracted.Addr == "" {
+						fmt.Println("Entry not found")
+						return err
+					}
+					fmt.Printf("connection %s removed", extracted.Addr)
+					return err
+				},
+			},
+			{
+				Name:    "ping",
+				Aliases: []string{"p"},
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "namespace",
+						Aliases: []string{"n"},
+						Usage:   "ping all of the namespace",
+					},
+					&cli.BoolFlag{
+						Name:    "all",
+						Aliases: []string{"a"},
+						Usage:   "ping all entries",
+					},
+				},
+				Usage: "ping servers for availability",
+				Action: func(c *cli.Context) error {
+					ssh_list, err := bucket.GetSshList()
+					if c.Bool("namespace") {
+						s, err := fzf.FuzzyNamespaceSelector(ssh_list)
+						if err != nil {
+							os.Exit(1)
+						}
+						ssh.PingNamespace(s)
+					} else if c.Bool("all") {
+						var wg sync.WaitGroup
+						sshList, _ := bucket.GetSshList()
+						for _, s := range sshList {
+							wg.Add(1)
+							go ssh.PingWorker(s, &wg)
+						}
+						wg.Wait()
+					} else {
+						s, err := fzf.FuzzySshSelector(false)
+						if err != nil {
+							os.Exit(1)
+						}
+						ssh.Ping(s)
+					}
+
+					return err
+				},
+			},
+			{
+				Name:    "run",
+				Aliases: []string{"p"},
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "namespace",
+						Aliases: []string{"n"},
+						Usage:   "ping all of the namespace",
+					},
+				},
+				Usage: "run commands on remote",
+				Action: func(c *cli.Context) error {
+					ssh_list, err := bucket.GetSshList()
+					if c.Bool("namespace") {
+						ns, err := fzf.FuzzyNamespaceSelector(ssh_list)
+						if err != nil {
+							os.Exit(1)
+						}
+						ssh.SendCommandToNamespace(ns, strings.Join(c.Args().Slice()[:], " "))
+
+					} else {
+						s, err := fzf.FuzzySshSelector(false)
+						if err != nil {
+							os.Exit(1)
+						}
+						output, err := ssh.SendCommand(s, strings.Join(c.Args().Slice()[:], " "))
+						if err != nil {
+							log.Fatal(err)
+						}
+						fmt.Println(string(output))
+
+					}
+
 					return err
 				},
 			},
