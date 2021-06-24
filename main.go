@@ -222,7 +222,7 @@ func main() {
 			},
 			{
 				Name:    "run",
-				Aliases: []string{"p"},
+				Aliases: []string{"x"},
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:    "namespace",
