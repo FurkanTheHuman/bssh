@@ -6,11 +6,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
+	"path"
 	"reflect"
 	"strings"
 )
 
-const configPath string = "./sshconfig"
+const configPath string = ".config/bssh"
+
+func GetPath() string {
+	usr, _ := user.Current()
+	dir := usr.HomeDir
+	return path.Join(dir, configPath)
+}
 
 type SshSource struct {
 	Username  string `json:"hostname"`
@@ -64,20 +72,23 @@ func WriteFile(path string, newContent string) {
 
 func GetFileContents() (string, error) {
 	var file []byte
-	path := configPath
+	path := GetPath()
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Println("Config file does not exist. Creating one...")
 		_, err := os.Create(path)
-		f, _ := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0600)
+
+		f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0600)
+
 		f.WriteString("[]")
 		if err != nil {
 			log.Println("Can not create one. Exiting")
+			log.Fatalln(err)
 			return "", err
 
 		}
 
-		return "", nil
+		return "[]", nil
 	}
 	return string(file), nil
 }
@@ -105,7 +116,7 @@ func RemoveSsh(id SshSource) (SshSource, error) {
 		log.Fatalln("config file is corrupted!")
 	}
 	// there should be eero checking
-	f, _ := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	f, _ := os.OpenFile(GetPath(), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if _, err = f.WriteString(string(b)); err != nil {
 		log.Println("Write to file failed")
 
@@ -163,7 +174,7 @@ func UpdateConfigFile(s SshSource) error {
 		log.Fatalln("Can not parse SshSource")
 	}
 	newContent := string(b)
-	path := configPath
+	path := GetPath()
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Println("Could not read file")

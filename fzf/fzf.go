@@ -12,8 +12,13 @@ import (
 
 func FuzzySshSelector(isNamespaced bool) (config.SshSource, error) {
 	sshs, err := config.GetSshList()
+
 	if err != nil {
 		log.Fatalln("READ FAILED FOR BUCKET")
+	}
+	if len(sshs) < 1 {
+		fmt.Println("You don't have any address in the bucket")
+		os.Exit(1)
 	}
 	var namespace string
 	if isNamespaced {
