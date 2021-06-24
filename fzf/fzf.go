@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	config "example.com/bssh/bucket"
+	config "github.com/FurkanTheHuman/bssh/bucket"
 	"github.com/ktr0731/go-fuzzyfinder"
 )
 

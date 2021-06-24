@@ -7,7 +7,7 @@ import (
 
 	b64 "encoding/base64"
 
-	bucket "example.com/bssh/bucket"
+	bucket "github.com/FurkanTheHuman/bssh/bucket"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"

@@ -1,4 +1,4 @@
-module example.com/bssh
+module github.com/FurkanTheHuman/bssh
 
 go 1.15
 
