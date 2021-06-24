@@ -12,8 +12,8 @@ import (
 
 	b64 "encoding/base64"
 
-	bucket "github.com/FurkanTheHuman/bssh/bucket"
 	"github.com/fatih/color"
+	bucket "github.com/furkanthehuman/bssh/bucket"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"

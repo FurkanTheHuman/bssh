@@ -10,9 +10,9 @@ import (
 
 	b64 "encoding/base64"
 
-	"github.com/FurkanTheHuman/bssh/bucket"
-	"github.com/FurkanTheHuman/bssh/fzf"
-	ssh "github.com/FurkanTheHuman/bssh/ssh_common"
+	"github.com/furkanthehuman/bssh/bucket"
+	"github.com/furkanthehuman/bssh/fzf"
+	ssh "github.com/furkanthehuman/bssh/ssh_common"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
 )
