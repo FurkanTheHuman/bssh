@@ -32,7 +32,7 @@ func main() {
 
 	app := &cli.App{
 		Name:  "bssh",
-		Usage: "Timeless ssh manager",
+		Usage: "Simple ssh manager",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "namespace",
