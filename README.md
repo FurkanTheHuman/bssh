@@ -65,7 +65,7 @@ You can install the project by cloning this repository. Of course you need go in
 `sudo cp bssh /usr/local/bin/bssh`     
 
 ### Install From Binary
-You can directly install the executable from GitHub release. Choose the version that is compatible with you system from [here](https://github.com/FurkanTheHuman/bssh/releases)     
+You can directly install the executable from GitHub release. Choose the version that is compatible with your system from [here](https://github.com/FurkanTheHuman/bssh/releases)     
 `wget -O bssh https://github.com/FurkanTheHuman/bssh/releases/download/v0.1.5/bssh_0.1.5_linux_amd64.tar.gz`     
 `chmod +x bssh`     
 `sudo cp bssh /usr/local/bin/bssh`   
