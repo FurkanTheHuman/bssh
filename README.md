@@ -17,7 +17,7 @@
     - [go-get](#installing-with-go-get)
     - [From The Source ](#installing-From-The-Source)
     - [Install From Binary](#Install-From-Binary)
-  - [Notes](#notes)
+
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
