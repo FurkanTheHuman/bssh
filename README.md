@@ -33,7 +33,7 @@ Start by adding an ssh connection
 or     
 `bssh add --addr root@example.com  -n cluster --password <SOME PASSWORD> --alias exmaple_conn`
 
-`-n <namepsace>` flag enables you to categorize the connections.
+`-n <namespace>` flag enables you to categorize the connections.
 
 ### Connecting 
 By typing `bssh` you can now see the connection and connect to it. Also, by using `bssh -n` you can filter by namespace You can add more connections to same namespace.
