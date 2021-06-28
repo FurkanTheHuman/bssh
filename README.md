@@ -36,14 +36,15 @@ or
 `-n <namespace>` flag enables you to categorize the connections.
 
 ### Connecting 
-By typing `bssh` you can now see the connection and connect to it. Also, by using `bssh -n` you can filter by namespace You can add more connections to same namespace.
+By typing `bssh` you can now see the connection and connect to it. Also, by using `bssh -n` you can filter by namespaces        
+You can add more connections to the same namespace.
 
 ### Parallel Code Execution
-Let's say you have 30 different servers in you cluster and want check if the time is synchronized. 
+Let's say you have 30 different servers in you cluster and want check if the time is synchronized.    
 run:    
 `bssh run -n date`    
 select the namespace you want to check.   
-Or you might want which host is up or down.     
+Or you might want to know which host is up or down.     
 `bssh ping -n`
 
 for more commands check `bssh --help`
@@ -58,7 +59,7 @@ If you have go installed you can use go-get to install bssh.
 `go get https://github.com/FurkanTheHuman/bssh`
 
 ### Installing From The Source
-You can install the project by cloning this repository. Of course you need go installed.         
+You can install the project by cloning this repository. Of course go needs to be installed.         
 `git clone https://github.com/FurkanTheHuman/bssh`    
 `cd bssh`    
 `go build .`    
@@ -66,6 +67,7 @@ You can install the project by cloning this repository. Of course you need go in
 
 ### Install From Binary
 You can directly install the executable from GitHub release. Choose the version that is compatible with your system from [here](https://github.com/FurkanTheHuman/bssh/releases)     
-`wget -O bssh https://github.com/FurkanTheHuman/bssh/releases/download/v0.1.5/bssh_0.1.5_linux_amd64.tar.gz`     
+`wget -O bssh.tar.gz https://github.com/FurkanTheHuman/bssh/releases/download/v0.1.6/bssh_0.1.6_linux_amd64.tar.gz`     
+`tar xvf bssh.tar.gz`
 `chmod +x bssh`     
 `sudo cp bssh /usr/local/bin/bssh`   
