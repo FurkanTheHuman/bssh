@@ -69,9 +69,9 @@ func FuzzyNamespaceSelector(sshs []config.SshSource) (string, error) {
 		}
 
 		var meta string
-		filtered_list := config.FilterSsh(sshs, namespaces[i])
-		for filtered, _ := range filtered_list {
-			meta = meta + filtered_list[filtered].Username + "@" + filtered_list[filtered].Addr + "\n"
+		filteredList := config.FilterSsh(sshs, namespaces[i])
+		for _, filtered := range filteredList {
+			meta = meta + filtered.Username + "@" + filtered.Addr + "\n"
 
 		}
 		return fmt.Sprintln(meta)
