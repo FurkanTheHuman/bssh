@@ -72,13 +72,13 @@ func WriteFile(path string, newContent string) {
 
 func GetFileContents() (string, error) {
 	var file []byte
-	path := GetPath()
-	file, err := ioutil.ReadFile(path)
+	fPath := GetPath()
+	file, err := ioutil.ReadFile(fPath)
 	if err != nil {
 		log.Println("Config file does not exist. Creating one...")
-		_, err := os.Create(path)
+		_, err := os.Create(fPath)
 
-		f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0600)
+		f, err := os.OpenFile(fPath, os.O_WRONLY|os.O_CREATE, 0600)
 
 		f.WriteString("[]")
 		if err != nil {
@@ -174,15 +174,15 @@ func UpdateConfigFile(s SshSource) error {
 		log.Fatalln("Can not parse SshSource")
 	}
 	newContent := string(b)
-	path := GetPath()
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+	fPath := GetPath()
+	f, err := os.OpenFile(fPath, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Println("Could not read file")
 		panic(err)
 	}
 
 	list := make([]SshSource, 0)
-	var new SshSource
+	var newSsh SshSource
 	old, _ := GetFileContents()
 	err = json.Unmarshal([]byte(old), &list)
 	if err != nil {
@@ -190,13 +190,13 @@ func UpdateConfigFile(s SshSource) error {
 
 	}
 
-	err = json.Unmarshal([]byte(newContent), &new)
+	err = json.Unmarshal([]byte(newContent), &newSsh)
 	if err != nil {
 		log.Println("Unmarshal failed")
 
 		panic(err)
 	}
-	list = append(list, new)
+	list = append(list, newSsh)
 	log.Println("There are ", len(list), "records in config")
 	b, err = json.MarshalIndent(list, "", "  ")
 	if err != nil {

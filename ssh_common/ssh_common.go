@@ -125,13 +125,13 @@ func Ping(s bucket.SshSource) {
 }
 
 func PingNamespace(namespace string) {
-	ssh_list, _ := bucket.GetSshList()
-	filtered_list := bucket.FilterSsh(ssh_list, namespace)
+	sshList, _ := bucket.GetSshList()
+	filteredList := bucket.FilterSsh(sshList, namespace)
 	//const numJobs = 8
 	//jobs := make(chan bucket.SshSource, numJobs)
 	// results := make(chan int, numJobs)
 	var wg sync.WaitGroup
-	for _, s := range filtered_list {
+	for _, s := range filteredList {
 		wg.Add(1)
 		go PingWorker(s, &wg)
 	}
@@ -261,12 +261,12 @@ func SendCommandWorker(s bucket.SshSource, wg *sync.WaitGroup, mutex *sync.Mutex
 }
 
 func SendCommandToNamespace(namespace string, commands ...string) {
-	ssh_list, _ := bucket.GetSshList()
-	filtered_list := bucket.FilterSsh(ssh_list, namespace)
+	sshList, _ := bucket.GetSshList()
+	filteredList := bucket.FilterSsh(sshList, namespace)
 	var mutex = &sync.Mutex{}
 
 	var wg sync.WaitGroup
-	for _, s := range filtered_list {
+	for _, s := range filteredList {
 		wg.Add(1)
 		go SendCommandWorker(s, &wg, mutex, commands...)
 	}

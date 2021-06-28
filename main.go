@@ -169,10 +169,15 @@ func main() {
 						os.Exit(0)
 					}
 					extracted, err := bucket.RemoveSsh(s)
+					if err != nil {
+						return err
+					}
+
 					if extracted.Addr == "" {
 						fmt.Println("Entry not found")
 						return err
 					}
+
 					fmt.Printf("connection %s removed", extracted.Addr)
 					return err
 				},
@@ -194,9 +199,9 @@ func main() {
 				},
 				Usage: "ping servers for availability",
 				Action: func(c *cli.Context) error {
-					ssh_list, err := bucket.GetSshList()
+					sshList, err := bucket.GetSshList()
 					if c.Bool("namespace") {
-						s, err := fzf.FuzzyNamespaceSelector(ssh_list)
+						s, err := fzf.FuzzyNamespaceSelector(sshList)
 						if err != nil {
 							os.Exit(1)
 						}
@@ -232,9 +237,9 @@ func main() {
 				},
 				Usage: "run commands on remote",
 				Action: func(c *cli.Context) error {
-					ssh_list, err := bucket.GetSshList()
+					sshList, err := bucket.GetSshList()
 					if c.Bool("namespace") {
-						ns, err := fzf.FuzzyNamespaceSelector(ssh_list)
+						ns, err := fzf.FuzzyNamespaceSelector(sshList)
 						if err != nil {
 							os.Exit(1)
 						}
