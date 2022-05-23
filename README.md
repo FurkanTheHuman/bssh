@@ -56,7 +56,7 @@ for more commands check `bssh --help`
 ### Installing With go-get
 
 If you have go installed you can use go-get to install bssh.    
-`go get https://github.com/FurkanTheHuman/bssh`
+`go get github.com/furkanthehuman/bssh`
 
 ### Installing From The Source
 You can install the project by cloning this repository. Of course go needs to be installed.         
