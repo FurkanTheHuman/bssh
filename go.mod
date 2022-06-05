@@ -21,10 +21,9 @@ require (
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/urfave/cli v1.22.5
 	github.com/urfave/cli/v2 v2.3.0
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
-	golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7 // indirect
-	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
+	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	honnef.co/go/tools v0.0.1-2020.1.6
 	k8s.io/apiserver v0.21.0
