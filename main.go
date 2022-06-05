@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	b64 "encoding/base64"
 
@@ -44,6 +45,12 @@ func main() {
 				Aliases: []string{"s"},
 				Usage:   "show password",
 			},
+			&cli.IntFlag{
+				Name:    "try",
+				Aliases: []string{"t"},
+				Usage:   "try multiple times to connect to a server",
+				Value:   1,
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -55,10 +62,26 @@ func main() {
 			selectedSsh, err := fzf.FuzzySshSelector(c.Bool("namespace"))
 
 			if err != nil {
+				fmt.Println(err)
 				os.Exit(1)
 			}
+			Ntimes := c.Int("try")
+			if Ntimes <= 0 {
+				Ntimes = 1
+			}
 
-			return ssh.Connect(selectedSsh)
+			for i := 0; i < Ntimes; i++ {
+				err = ssh.Connect(selectedSsh)
+				if err == nil {
+					break
+				}
+				if c.Int("try") == 0 || c.Int("try") == 1 {
+					break // we don't want to show the trying again message for a single try
+				}
+				fmt.Println("Failed to connect. Trying again...")
+				time.Sleep(time.Second * 1)
+			}
+			return err
 		},
 		Commands: []*cli.Command{
 			{
