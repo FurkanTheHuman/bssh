@@ -25,19 +25,18 @@ func Connect(s bucket.SshSource) error {
 	client, err := DialHost(s.Addr+":"+s.Port, config)
 
 	if err != nil {
-		os.Exit(1)
+		return err
 	}
 
 	session, err := client.NewSession()
 
 	if err != nil {
-		log.Fatal("Could not create a new session...")
+		return err
 	}
 	fd, origState := RequestTerminal(session)
 	err = session.Shell()
 	if err != nil {
-		log.Fatal("LINE: X -> Can't  save original terminal state ")
-
+		return err
 	}
 	defer terminal.Restore(fd, origState)
 	return session.Wait()
@@ -82,7 +81,7 @@ func GetSshConfig(s bucket.SshSource) *ssh.ClientConfig {
 				ssh.PublicKeys(signer),
 			},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-			Timeout:         time.Second * 5,
+			Timeout:         time.Second * 15,
 		}
 	}
 	return config
